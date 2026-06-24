@@ -1,0 +1,35 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=dashboard
+    # NOT exposed to public — only accessible inside Docker network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - PORT=3001
+      - CORS_ORIGIN=https://YOUR_DOMAIN.com
+      - MONGODB_URI=mongodb://mongodb:27017/dashboard
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
